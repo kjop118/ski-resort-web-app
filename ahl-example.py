@@ -2,57 +2,72 @@
 from collections import defaultdict
 import random
 
-# przykładowe dane o restauracjach (nazwa, lokalizacja, rodzaj kuchni, ocena, cena)
-restaurants = [
-    ("Restauracja A", "Warszawa", "Włoska", 4.5, 3),
-    ("Restauracja B", "Kraków", "Meksykańska", 4.0, 2),
-    ("Restauracja C", "Gdańsk", "Azjatycka", 4.8, 4),
-    ("Restauracja D", "Wrocław", "Polska", 4.2, 3),
-    ("Restauracja E", "Poznań", "Francuska", 4.6, 4),
-    ("Restauracja F", "Kraków", "Włoska", 4.1, 2),
-    ("Restauracja G", "Warszawa", "Azjatycka", 4.7, 4),
-    ("Restauracja H", "Wrocław", "Meksykańska", 3.9, 2),
-    ("Restauracja I", "Gdańsk", "Francuska", 4.4, 4),
-    ("Restauracja J", "Poznań", "Polska", 4.3, 3)
+# lista restauracji
+restaurant_list = [
+    {"name": "Restauracja 1", "location": "Warszawa", "cuisine": "włoska", "price_range": "średni", "user_ratings": 4},
+    {"name": "Restauracja 2", "location": "Kraków", "cuisine": "francuska", "price_range": "wysoki", "user_ratings": 5},
+    {"name": "Restauracja 3", "location": "Gdańsk", "cuisine": "meksykańska", "price_range": "niski", "user_ratings": 3},
+    {"name": "Restauracja 4", "location": "Wrocław", "cuisine": "japońska", "price_range": "średni", "user_ratings": 4},
+    {"name": "Restauracja 5", "location": "Kraków", "cuisine": "włoska", "price_range": "wysoki", "user_ratings": 4},
 ]
 
-# funkcja do wyboru najlepszej restauracji za pomocą algorytmu AHL
+# implementuj funkcję get_restaurants(), która zwróci listę restauracji spełniających kryteria
+def get_restaurants(location):#, cuisine, price_range, user_ratings):
+    # filtruj listę restauracji po kryteriach użytkownika
+    filtered_restaurants = []
+    for restaurant in restaurant_list:
+        #  and restaurant["cuisine"] == cuisine and restaurant["price_range"] == price_range and restaurant["user_ratings"] >= user_ratings
+        if restaurant["location"] == location:
+            filtered_restaurants.append(restaurant)
+
+    return filtered_restaurants
+
+
+
 def choose_restaurant(location, cuisine, price_range, user_ratings):
-    # przygotowanie słownika dla każdej restauracji, w celu przechowywania liczby trafień
-    restaurants_hits = defaultdict(int)
+    # przygotowanie listy restauracji spełniających kryteria użytkownika
+    restaurants = get_restaurants(location)
+    # print(restaurants)
 
-    # liczba losowych prób do wyboru najlepszej restauracji
-    num_trials = 100
 
-    # pętla, która wywołuje AHL wielokrotnie i zlicza wyniki
-    for i in range(num_trials):
-        # losowe ustawienie wagi dla każdego kryterium
-        location_weight = random.uniform(0, 1)
-        cuisine_weight = random.uniform(0, 1)
-        price_range_weight = random.uniform(0, 1)
-        user_ratings_weight = random.uniform(0, 1)
+    # inicjalizacja wag dla każdego kryterium decyzyjnego, docolowo użytkownik podaje kryterium
+    weights = {"location": 0.25, "cuisine": 0.25, "price_range": 0.25, "user_ratings": 0.25}
 
-        # AHL - przypisanie punktów dla każdej restauracji na podstawie wag
+    # inicjalizacja słownika dla każdej restauracji, aby przechowywać liczbę trafień
+    restaurants_hits = {'restaurant': 0 for restaurant in restaurants}
+
+
+    # liczba iteracji algorytmu
+    num_iterations = 10
+
+    for i in range(num_iterations):
+        # losowe ustawienie wag dla każdego kryterium
+        for k in weights.keys():
+            weights[k] = random.uniform(0, 1)
+
+        # wyliczenie punktów dla każdej restauracji
         for restaurant in restaurants:
-            if restaurant[1] == location and restaurant[2] == cuisine and restaurant[4] == price_range:
-                # punkty za trafienie kryteriów użytkownika
-                hits = 1
+            hits = 0
+            for k, v in weights.items():
+                if k == "location" and restaurant['location'] == location:
+                    hits += v
+                elif k == "cuisine" and restaurant['cuisine'] == cuisine:
+                    hits += v
+                elif k == "price_range" and restaurant['price_range'] == price_range:
+                    hits += v
+                elif k == "user_ratings" and restaurant['user_ratings'] >= user_ratings:
+                    hits += v
 
-                # punkty za ocenę użytkownika (1-5)
-                hits += user_ratings_weight * restaurant[3]
+            # zwiększenie liczby trafień dla danej restauracji
+            restaurants_hits['restaurant'] += hits
 
-                # punkty za każde kryterium wagowe
-                hits += location_weight
-                hits += cuisine_weight
-                hits += price_range_weight
-
-                # zwiększenie liczby trafień dla danej restauracji
-                restaurants_hits[restaurant] += hits
-
-    # wybór restauracji z najwyższą ilością trafień
+    # wybór najlepszej restauracji na podstawie liczby trafień
     best_restaurant = max(restaurants_hits, key=restaurants_hits.get)
+    print(best_restaurant)
+    # best_restaurant = restaurants_hits
 
-    # zwrócenie najlepszej restauracji
-    return best_restaurant[0]
-
+    return best_restaurant
+# (location, cuisine, price_range, user_ratings)
+search_restaurant = choose_restaurant("Kraków", "włoska", "wysoki", 4)
+# print(search_restaurant)
 
